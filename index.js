@@ -149,8 +149,11 @@ app.post('/chat', async (req, res) => {
         {
           model: 'deepseek/deepseek-chat-v3-0324:free',
           messages: [
-            { role: 'system', content: 'You are an AI assistant using RAG. Use the provided context to answer.' },
-            { role: 'user', content: `${context}\n\nUser: ${message}` },
+            {
+              role: 'system',
+              content: `You are a helpful assistant. Here is the context relevant to the user's query:\n\n${context.substring(0, 10000)}\n\nIMPORTANT: Answer based only on this context. If the answer cannot be found, clearly state that.`
+            },
+            { role: 'user', content: `${message}` },
           ],
         },
         {
@@ -191,8 +194,11 @@ app.post('/chat-stream', async (req, res) => {
         {
           model: 'deepseek/deepseek-chat-v3-0324:free',
           messages: [
-            { role: 'system', content: 'You are an AI assistant using RAG. Use the provided context to answer.' },
-            { role: 'user', content: `${context}\n\nUser: ${message}` },
+            {
+              role: 'system',
+              content: `You are a helpful assistant. Here is the context relevant to the user's query:\n\n${context.substring(0, 10000)}\n\nIMPORTANT: Answer based only on this context. If the answer cannot be found, clearly state that.`
+            },
+            { role: 'user', content: `${message}` },
           ],
           stream: true
         },
