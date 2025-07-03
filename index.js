@@ -6,9 +6,11 @@ const pdfParse = require('pdf-parse');
 const ExcelJS = require('exceljs');
 const mammoth = require('mammoth');
 const { Pinecone } = require('@pinecone-database/pinecone');
+const cors = require('cors');
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 const upload = multer({ dest: 'uploads/' });
 
 // Pinecone setup
