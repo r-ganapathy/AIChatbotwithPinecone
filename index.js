@@ -167,6 +167,62 @@ app.post('/chat', async (req, res) => {
   }
 });
 
+// Streaming chat endpoint (replica of /chat, but streams output)
+app.post('/chat-stream', async (req, res) => {
+  const { message } = req.body;
+  try {
+    if (!index) return res.status(503).json({ error: 'Pinecone index not ready yet.' });
+    const queryEmbedding = await embedText(message);
+    const results = await index.query({
+      vector: queryEmbedding,
+      topK: 5,
+      includeMetadata: true,
+    });
+    const context = results.matches.map(m => m.metadata.text).join('\n');
+    // Stream response from OpenRouter (DeepSeek)
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    try {
+      const openrouterRes = await axios.post(
+        'https://openrouter.ai/api/v1/chat/completions',
+        {
+          model: 'deepseek/deepseek-chat-v3-0324:free',
+          messages: [
+            { role: 'system', content: 'You are an AI assistant using RAG. Use the provided context to answer.' },
+            { role: 'user', content: `${context}\n\nUser: ${message}` },
+          ],
+          stream: true
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          responseType: 'stream',
+        }
+      );
+      openrouterRes.data.on('data', chunk => {
+        res.write(`data: ${chunk.toString()}\n\n`);
+      });
+      openrouterRes.data.on('end', () => {
+        res.write('event: end\ndata: [DONE]\n\n');
+        res.end();
+      });
+      openrouterRes.data.on('error', err => {
+        res.write(`event: error\ndata: ${err.message}\n\n`);
+        res.end();
+      });
+    } catch (err) {
+      res.write(`event: error\ndata: ${err.message}\n\n`);
+      res.end();
+    }
+  } catch (err) {
+    res.write(`event: error\ndata: ${err.message}\n\n`);
+    res.end();
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
