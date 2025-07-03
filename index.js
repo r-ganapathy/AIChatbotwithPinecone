@@ -151,7 +151,13 @@ app.post('/chat', async (req, res) => {
           messages: [
             {
               role: 'system',
-              content: `You are a helpful assistant. Here is the context relevant to the user's query:\n\n${context.substring(0, 10000)}\n\nIMPORTANT: Answer based only on this context. If the answer cannot be found, clearly state that.`
+              content: `You are a helpful assistant. Below is context relevant to the user's query:\n\n${context.substring(0, 10000)}
+ 
+IMPORTANT:
+- Answer the user's question based only on this context. If the answer is not in the context, clearly state that you don't know.
+- Format your answer clearly using markdown (e.g., bullet points, numbered steps, bold headings, etc.) when appropriate.
+- Keep answers precise, concise, and easy for a human to understand.
+- Do not make up information or speculate beyond the given context.`
             },
             { role: 'user', content: `${message}` },
           ],
@@ -196,7 +202,13 @@ app.post('/chat-stream', async (req, res) => {
           messages: [
             {
               role: 'system',
-              content: `You are a helpful assistant. Here is the context relevant to the user's query:\n\n${context.substring(0, 10000)}\n\nIMPORTANT: Answer based only on this context. If the answer cannot be found, clearly state that.`
+              content: `You are a helpful assistant. Below is context relevant to the user's query:\n\n${context.substring(0, 10000)}
+ 
+IMPORTANT:
+- Answer the user's question based only on this context. If the answer is not in the context, clearly state that you don't know.
+- Format your answer clearly using markdown (e.g., bullet points, numbered steps, bold headings, etc.) when appropriate.
+- Keep answers precise, concise, and easy for a human to understand.
+- Do not make up information or speculate beyond the given context.`
             },
             { role: 'user', content: `${message}` },
           ],
